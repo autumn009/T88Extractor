@@ -12,6 +12,8 @@ if ( args.Count() == 0)
 var listTargets = new List<string>();
 bool listFlag = false;
 bool overrideFlag = false;
+string? filename = null;
+
 foreach (var target in args)
 {
     if(target == "-list") listFlag = true;
@@ -49,7 +51,7 @@ foreach (var item in listTargets)
     Console.WriteLine();
 }
 
-exit:
+exit:;
 
 int getNextByte()
 {
@@ -95,32 +97,53 @@ Tag? getTag()
 
 void analyzeAndSaveData(DataTag? tag)
 {
-    // seek header
-    for(; ; )
+    if (filename == null)
     {
-        int b = tag.getNextByte();
-        if (b < 0) goto eof;
-        if (b == 0xd3) break;
+        // seek header
+        for (; ; )
+        {
+            int b = tag.getNextByte();
+            if (b < 0) goto eof;
+            if (b == 0xd3) break;
+        }
+        for (int i = 0; i < 9; i++)
+        {
+            int b = tag.getNextByte();
+            if (b < 0) goto eof;
+            if (b != 0xd3) return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 6; i++)
+        {
+            int b = tag.getNextByte();
+            if (b < 0) goto eof;
+            if (b == 0) continue;
+            if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?') b = 'x';
+            sb.Append((char)b);
+        }
+        filename = sb.ToString();
+        Console.Write($"{filename}, ");
     }
-    for (int i = 0; i < 9; i++)
+    else
     {
-        int b = tag.getNextByte();
-        if (b < 0) goto eof;
-        if (b != 0xd3) return;
+        if (listFlag) return;   // list only
+        int zeroCount = 0;
+        int dataCount = 0;
+        for(; ; )
+        {
+            int b = tag.getNextByte();
+            if (b < 0) goto eof;
+            if (b == 0) zeroCount++;
+            dataCount++;
+            // SAVE IT
+            if (zeroCount == 9)
+            {
+                Console.Write($"({dataCount}),");
+                break;
+            }
+        }
+        filename = null;
     }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < 6; i++)
-    {
-        int b = tag.getNextByte();
-        if (b < 0) goto eof;
-        if (b == 0) continue;
-        if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?')  b = 'x';
-        sb.Append((char)b);
-    }
-    Console.Write($"{sb.ToString()}, ");
-    // TBW
-
-
 eof:;
 }
 
