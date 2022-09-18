@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection.Metadata;
 using System.Security.Cryptography;
+using System.Text;
 
 if ( args.Count() == 0)
 {
@@ -43,8 +44,9 @@ foreach (var item in listTargets)
         var tag = getTag();
         if (tag == null) break;
         if (tag is EndTag) break;
-        if (tag is DataTag) Console.WriteLine(tag);
+        if (tag is DataTag) analyzeAndSaveData(tag as DataTag);
     }
+    Console.WriteLine();
 }
 
 exit:
@@ -66,7 +68,7 @@ Tag? getTag()
 {
     var id = getNextword();
     var size = getNextword();
-    Tag tag = null;
+    Tag? tag = null;
     if (id == 0) tag = new EndTag();
     else if (id == 1) tag = new VersionTag();
     else if (id == 0x100) tag = new BlankTag();
@@ -74,8 +76,13 @@ Tag? getTag()
     else if (id == 0x103) tag = new MarkTag();
     else if (id == 0x101)
     {
-        tag = new DataTag();
-
+        var dtag = new DataTag();
+        dtag.Data = new byte[size];
+        for (int i = 0; i < size; i++)
+        {
+            dtag.Data[i] = (byte)getNextByte();
+        }
+        return dtag;
     }
     else
     {
@@ -84,6 +91,37 @@ Tag? getTag()
     }
     p += size;
     return tag;
+}
+
+void analyzeAndSaveData(DataTag? tag)
+{
+    // seek header
+    for(; ; )
+    {
+        int b = tag.getNextByte();
+        if (b < 0) goto eof;
+        if (b == 0xd3) break;
+    }
+    for (int i = 0; i < 9; i++)
+    {
+        int b = tag.getNextByte();
+        if (b < 0) goto eof;
+        if (b != 0xd3) return;
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 6; i++)
+    {
+        int b = tag.getNextByte();
+        if (b < 0) goto eof;
+        if (b == 0) continue;
+        if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?')  b = 'x';
+        sb.Append((char)b);
+    }
+    Console.Write($"{sb.ToString()}, ");
+    // TBW
+
+
+eof:;
 }
 
 bool checkHeader()
@@ -133,5 +171,11 @@ class MarkTag : Tag
 
 class DataTag : Tag
 {
-
+    public byte[]? Data;
+    public int P = 0;
+    public int getNextByte()
+    {
+        if (P >= Data.Length) return -1;
+        return Data[P++];
+    }
 }
