@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "T88Extractor": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\delme\\SanoTapes\\*.t88"
+    }
+  }
+}
