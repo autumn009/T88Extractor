@@ -104,6 +104,12 @@ void analyzeAndSaveData(DataTag? tag)
         {
             int b = tag.getNextByte();
             if (b < 0) goto eof;
+            if( b == 0x3a)
+            {
+                alalyzeMonitorStyle(tag);
+                goto eof;
+            }
+
             if (b == 0xd3) break;
         }
         for (int i = 0; i < 9; i++)
@@ -145,6 +151,46 @@ void analyzeAndSaveData(DataTag? tag)
         filename = null;
     }
 eof:;
+}
+
+void alalyzeMonitorStyle(DataTag? tag)
+{
+    var h = tag.getNextByte();
+    var l = tag.getNextByte();
+    Console.Write($"&h{h:X2}{l:X2}, ");
+    var sumAddr = (-h + l) & 0xff;
+    var sum1 = tag.getNextByte();
+    if( sumAddr != sum1) 
+    {
+        Console.Write("[ADDR CHECKSUM ERR], ");
+        return;
+    }
+    for (; ; )
+    {
+        var mark = tag.getNextByte();
+        if( mark != 0x3a)
+        {
+            Console.Write("[NOT DATA HEAD(0x3a) ERR], ");
+            return;
+        }
+        var datasize = tag.getNextByte();
+        if (datasize == 0) break;
+        if (datasize < 0) break;
+        int sum = datasize;
+        for (int i = 0; i < datasize; i++)
+        {
+            var d = tag.getNextByte();
+            sum += d;
+            // write d
+        }
+        sum = (-sum) & 0xff;
+        var blocksum = tag.getNextByte();
+        if (sum != blocksum)
+        {
+            Console.Write("[BLOCK CHECKSUM ERR], ");
+            return;
+        }
+    }
 }
 
 bool checkHeader()
