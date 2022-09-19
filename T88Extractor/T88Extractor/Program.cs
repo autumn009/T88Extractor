@@ -168,20 +168,26 @@ void analyzeAndSaveData(DataTag? tag)
         int zeroCount = 0;
         int dataCount = 0;
         using var stream = MyCreateOutputStream(filename);
-        for (; ; )
+        try
         {
-            int b = tag.getNextByte();
-            if (b < 0) goto eof;
-            if (b == 0) zeroCount++; else zeroCount = 0;
-            dataCount++;
-            stream.WriteByte((byte)b);
-            if (zeroCount == 9)
+            for (; ; )
             {
-                //Console.Write($"({dataCount}),");
-                break;
+                int b = tag.getNextByte();
+                if (b < 0) goto eof;
+                if (b == 0) zeroCount++; else zeroCount = 0;
+                dataCount++;
+                stream.WriteByte((byte)b);
+                if (zeroCount == 9)
+                {
+                    //Console.Write($"({dataCount}),");
+                    break;
+                }
             }
         }
-        filename = null;
+        finally
+        {
+            filename = null;
+        }
     }
 eof:;
 }
