@@ -225,12 +225,68 @@ void saveJunk(dLoader dl)
 
 bool findMonitorAndRemove(dLoader dl)
 {
-    //throw new NotImplementedException();
+    dl.P = 0;
+// seek header
+tryagain:
+    for (; ; )
+    {
+        dl.StartMark = dl.P;
+        int b = dl.getNextByte();
+        if (b < 0) goto eof;
+        if (b == 0x3a) break;
+    }
+    var h = dl.getNextByte();
+    var l = dl.getNextByte();
+    //Console.Write($"&h{h:X2}{l:X2}, ");
+    var sumAddr = -(h + l) & 0xff;
+    var sum1 = dl.getNextByte();
+    if (sumAddr != sum1) goto tryagain;
+    Console.Write($"&h{h:X2}{l:X2}, ");
+
+    var streamMem = new MemoryStream();
+    for (; ; )
+    {
+        var mark = dl.getNextByte();
+        if (mark != 0x3a)
+        {
+            Console.Write("[NOT DATA HEAD(0x3a) ERR], ");
+            break;
+        }
+        var datasize = dl.getNextByte();
+        if (datasize == 0) break;
+        if (datasize < 0) break;
+        int sum = datasize;
+        for (int i = 0; i < datasize; i++)
+        {
+            var d = dl.getNextByte();
+            sum += d;
+            streamMem.WriteByte((byte)d);
+        }
+        sum = (-sum) & 0xff;
+        var blocksum = dl.getNextByte();
+        if (sum != blocksum)
+        {
+            Console.Write("[BLOCK CHECKSUM ERR], ");
+            break;
+        }
+    }
+    dl.EndMark = dl.P;
+    dl.RemoveMarkedArea();
+    if (!listFlag)
+    {
+        using (var stream = MyCreateOutputStream($"mon-{h:X2}{l:X2}"))
+        {
+            stream.Write(streamMem.ToArray());
+        }
+    }
+    return true;
+eof:
     return false;
 }
 
 bool findBasicAndRemove(dLoader dl)
 {
+    dl.P = 0;
 // seek header
 tryagain:
     for (; ; )
