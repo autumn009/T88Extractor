@@ -60,7 +60,9 @@ foreach (var item in listTargets)
         if (tag is EndTag) break;
         if (tag is DataTag dtag) stream.Write(dtag.Data,12,dtag.Data.Length-12);
     }
+    stream.Flush();
     var dbytes = stream.ToArray();
+    //dump(dbytes);
     var dl = new dLoader(dbytes);
 
     for (; ; )
@@ -76,6 +78,24 @@ foreach (var item in listTargets)
     saveJunk(dl);
     Console.WriteLine();
 }
+
+#if false
+void dump(byte[] dbytes)
+{
+    int count = 0;
+    int dc = 0;
+    for (int i = 0; i < dbytes.Length; i++)
+    {
+        if (dbytes[i] == 0xd3) dc++; else dc = 0;
+        if( dc == 10)
+        {
+            count++;
+            dc = 0;
+        }
+    }
+    Console.WriteLine($"!!!{count}!!!");
+}
+#endif
 
 int getNextByte()
 {
@@ -245,7 +265,7 @@ tryagain:
     for (; ; )
     {
         int b = dl.getNextByte();
-        if (b < 0) goto eof;
+        if (b < 0) break;
         if (b == 0) zeroCount++; else zeroCount = 0;
         dataCount++;
         stream.WriteByte((byte)b);
@@ -257,6 +277,7 @@ tryagain:
     }
     dl.EndMark = dl.P;
     dl.RemoveMarkedArea();
+    //dump(dl.Data);
 
     if (!listFlag)
     {
@@ -345,6 +366,7 @@ class dLoader
         {
             newdata[p++] = Data[i];
         }
+        P = 0;
         Data = newdata;
         StartMark = -1;
         EndMark = -1;
