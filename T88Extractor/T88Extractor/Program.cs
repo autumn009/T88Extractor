@@ -243,13 +243,14 @@ tryagain:
     if (sumAddr != sum1) goto tryagain;
     Console.Write($"&h{h:X2}{l:X2}, ");
 
+    string errorMessage = "";
     var streamMem = new MemoryStream();
     for (; ; )
     {
         var mark = dl.getNextByte();
         if (mark != 0x3a)
         {
-            Console.Write("[NOT DATA HEAD(0x3a) ERR], ");
+            errorMessage = " [NOT DATA HEAD(0x3a) ERR]";
             break;
         }
         var datasize = dl.getNextByte();
@@ -266,7 +267,7 @@ tryagain:
         var blocksum = dl.getNextByte();
         if (sum != blocksum)
         {
-            Console.Write("[BLOCK CHECKSUM ERR], ");
+            errorMessage = " [BLOCK CHECKSUM ERR]";
             break;
         }
     }
@@ -274,7 +275,7 @@ tryagain:
     dl.RemoveMarkedArea();
     if (!listFlag)
     {
-        using (var stream = MyCreateOutputStream($"mon-{h:X2}{l:X2}"))
+        using (var stream = MyCreateOutputStream($"mon-{h:X2}{l:X2}{errorMessage}"))
         {
             stream.Write(streamMem.ToArray());
         }
