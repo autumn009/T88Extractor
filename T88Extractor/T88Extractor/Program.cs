@@ -192,7 +192,7 @@ void alalyzeMonitorStyle(DataTag? tag)
     var l = tag.getNextByte();
     Console.Write($"&h{h:X2}{l:X2}, ");
     if (listFlag) return;   // list only
-    var sumAddr = (-h + l) & 0xff;
+    var sumAddr = -(h + l) & 0xff;
     var sum1 = tag.getNextByte();
     if (sumAddr != sum1)
     {
