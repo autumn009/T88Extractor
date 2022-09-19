@@ -220,7 +220,8 @@ bool checkHeader()
 
 void saveJunk(dLoader dl)
 {
-    //throw new NotImplementedException();
+    using var stream = MyCreateOutputStream($"$JUNK DATA");
+    stream.Write(dl.Data);
 }
 
 bool findMonitorAndRemove(dLoader dl)
