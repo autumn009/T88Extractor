@@ -4,6 +4,7 @@ using System.Reflection.Metadata;
 using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 if ( args.Count() == 0)
 {
@@ -14,7 +15,6 @@ if ( args.Count() == 0)
 var listTargets = new List<string>();
 bool listFlag = false;
 bool overrideFlag = false;
-string? filename = null;
 string workingDirectory = "";
 
 foreach (var target in args)
@@ -51,18 +51,31 @@ foreach (var item in listTargets)
         Console.WriteLine("header not match, Skipped");
         continue;
     }
+    var stream = new MemoryStream();
     for (; ; )
     {
         if (p >= bytes.Length) break;
         var tag = getTag();
         if (tag == null) break;
         if (tag is EndTag) break;
-        if (tag is DataTag) analyzeAndSaveData(tag as DataTag);
+        if (tag is DataTag dtag) stream.Write(dtag.Data,12,dtag.Data.Length-12);
     }
+    var dbytes = stream.ToArray();
+    var dl = new dLoader(dbytes);
+
+    for (; ; )
+    {
+        bool b = findBasicAndRemove(dl);
+        if (!b) break;
+    }
+    for (; ; )
+    {
+        bool b = findMonitorAndRemove(dl);
+        if (!b) break;
+    }
+    saveJunk(dl);
     Console.WriteLine();
 }
-
-exit:;
 
 int getNextByte()
 {
@@ -121,76 +134,6 @@ Stream MyCreateOutputStream(string filename)
     return File.Create(fullpath);
 }
 
-void analyzeAndSaveData(DataTag? tag)
-{
-    // skip T88 header of DataTag
-    for (int i = 0; i < 12; i++)
-    {
-        int b = tag.getNextByte();
-        if (b < 0) goto eof;
-    }
-    if (filename == null)
-    {
-        // seek header
-        for (; ; )
-        {
-            int b = tag.getNextByte();
-            if (b < 0) goto eof;
-            if( b == 0x3a)
-            {
-                alalyzeMonitorStyle(tag);
-                goto eof;
-            }
-
-            if (b == 0xd3) break;
-        }
-        for (int i = 0; i < 9; i++)
-        {
-            int b = tag.getNextByte();
-            if (b < 0) goto eof;
-            if (b != 0xd3) return;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 6; i++)
-        {
-            int b = tag.getNextByte();
-            if (b < 0) goto eof;
-            if (b == 0) continue;
-            if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?') b = 'x';
-            sb.Append((char)b);
-        }
-        filename = sb.ToString();
-        Console.Write($"{filename}, ");
-    }
-    else
-    {
-        if (listFlag) return;   // list only
-        int zeroCount = 0;
-        int dataCount = 0;
-        using var stream = MyCreateOutputStream(filename);
-        try
-        {
-            for (; ; )
-            {
-                int b = tag.getNextByte();
-                if (b < 0) goto eof;
-                if (b == 0) zeroCount++; else zeroCount = 0;
-                dataCount++;
-                stream.WriteByte((byte)b);
-                if (zeroCount == 9)
-                {
-                    //Console.Write($"({dataCount}),");
-                    break;
-                }
-            }
-        }
-        finally
-        {
-            filename = null;
-        }
-    }
-eof:;
-}
 
 void writeJunkData(DataTag? tag)
 {
@@ -255,6 +198,80 @@ bool checkHeader()
     return true;
 }
 
+void saveJunk(dLoader dl)
+{
+    //throw new NotImplementedException();
+}
+
+bool findMonitorAndRemove(dLoader dl)
+{
+    //throw new NotImplementedException();
+    return false;
+}
+
+bool findBasicAndRemove(dLoader dl)
+{
+// seek header
+tryagain:
+    for (; ; )
+    {
+        dl.StartMark = dl.P;
+        int b = dl.getNextByte();
+        if (b < 0) goto eof;
+        if (b == 0xd3) break;
+    }
+    for (int i = 0; i < 9; i++)
+    {
+        int b = dl.getNextByte();
+        if (b < 0) goto eof;
+        if (b != 0xd3) goto tryagain;
+    }
+ 
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 6; i++)
+    {
+        int b = dl.getNextByte();
+        if (b < 0) goto eof;
+        if (b == 0) continue;
+        if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?') b = 'x';
+        sb.Append((char)b);
+    }
+    string filename = sb.ToString();
+    Console.Write($"{filename}, ");
+
+    var stream = new MemoryStream();
+    int zeroCount = 0;
+    int dataCount = 0;
+    for (; ; )
+    {
+        int b = dl.getNextByte();
+        if (b < 0) goto eof;
+        if (b == 0) zeroCount++; else zeroCount = 0;
+        dataCount++;
+        stream.WriteByte((byte)b);
+        if (zeroCount == 9)
+        {
+            //Console.Write($"({dataCount}),");
+            break;
+        }
+    }
+    dl.EndMark = dl.P;
+    dl.RemoveMarkedArea();
+
+    if (!listFlag)
+    {
+        using (var s = MyCreateOutputStream(filename))
+        {
+            s.Write(stream.ToArray());
+        }
+    }
+    return true;
+
+eof:;
+    return false;
+}
+
+
 void usage()
 {
     Console.WriteLine("T88Extgractor Path... [-list] [-override]");
@@ -298,5 +315,42 @@ class DataTag : Tag
     {
         if (P >= Data.Length) return -1;
         return Data[P++];
+    }
+}
+
+class dLoader
+{
+    public byte[] Data;
+    public int P = 0;
+    public int getNextByte()
+    {
+        if (P >= Data.Length) return -1;
+        return Data[P++];
+    }
+    public int StartMark = -1;
+    public int EndMark = -1;
+    public void RemoveMarkedArea()
+    {
+        if (StartMark < 0) throw new Exception("StartMark not set");
+        if (EndMark < 0) throw new Exception("EndMark not set");
+
+        int newsize = Data.Length - (EndMark - StartMark);
+        byte[] newdata = new byte[newsize];
+        int p = 0;
+        for (int i = 0; i < StartMark; i++)
+        {
+            newdata[p++] = Data[i];
+        }
+        for (int i = EndMark; i < Data.Length; i++)
+        {
+            newdata[p++] = Data[i];
+        }
+        Data = newdata;
+        StartMark = -1;
+        EndMark = -1;
+    }
+    public dLoader(byte[] dBytes)
+    {
+        Data = dBytes;
     }
 }
