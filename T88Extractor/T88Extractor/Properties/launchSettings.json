@@ -2,7 +2,7 @@
   "profiles": {
     "T88Extractor": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\delme\\SanoTapes\\*.t88"
+      "commandLineArgs": "C:\\delme\\SanoTapes\\*.t88 -override"
     }
   }
 }

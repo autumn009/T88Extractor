@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection.Metadata;
+using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,6 +14,7 @@ var listTargets = new List<string>();
 bool listFlag = false;
 bool overrideFlag = false;
 string? filename = null;
+string workingDirectory = "";
 
 foreach (var target in args)
 {
@@ -33,6 +35,14 @@ int p = 0;
 foreach (var item in listTargets)
 {
     Console.WriteLine($"{item}:");
+    workingDirectory = Path.Combine(Path.GetDirectoryName(item), Path.GetFileNameWithoutExtension(item));
+    if(overrideFlag && Directory.Exists(workingDirectory))
+    {
+        foreach (var item2 in Directory.EnumerateFiles(workingDirectory))
+        {
+            File.Delete(item2);
+        }
+    }
     bytes = File.ReadAllBytes(item);
     p = 0;
     if (checkHeader() == false)
@@ -95,6 +105,21 @@ Tag? getTag()
     return tag;
 }
 
+Stream MyCreateOutputStream(string filename)
+{
+    Directory.CreateDirectory(workingDirectory);
+    string fullpath = Path.Combine(workingDirectory, filename);
+    if( File.Exists(fullpath) )
+    {
+        for (int i = 1; ; i++)
+        {
+            fullpath = Path.Combine(workingDirectory, filename)+$" ({i})";
+            if (!File.Exists(fullpath)) break;
+        }
+    }
+    return File.Create(fullpath);
+}
+
 void analyzeAndSaveData(DataTag? tag)
 {
     if (filename == null)
@@ -135,16 +160,23 @@ void analyzeAndSaveData(DataTag? tag)
         if (listFlag) return;   // list only
         int zeroCount = 0;
         int dataCount = 0;
-        for(; ; )
+        using var stream = MyCreateOutputStream(filename);
+        // skip T88 header of DataTag
+        for (int i = 0; i < 12; i++)
         {
             int b = tag.getNextByte();
             if (b < 0) goto eof;
-            if (b == 0) zeroCount++;
+        }
+        for (; ; )
+        {
+            int b = tag.getNextByte();
+            if (b < 0) goto eof;
+            if (b == 0) zeroCount++; else zeroCount = 0;
             dataCount++;
-            // SAVE IT
+            stream.WriteByte((byte)b);
             if (zeroCount == 9)
             {
-                Console.Write($"({dataCount}),");
+                //Console.Write($"({dataCount}),");
                 break;
             }
         }
@@ -158,6 +190,7 @@ void alalyzeMonitorStyle(DataTag? tag)
     var h = tag.getNextByte();
     var l = tag.getNextByte();
     Console.Write($"&h{h:X2}{l:X2}, ");
+    if (listFlag) return;   // list only
     var sumAddr = (-h + l) & 0xff;
     var sum1 = tag.getNextByte();
     if( sumAddr != sum1) 
