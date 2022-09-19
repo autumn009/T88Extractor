@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Net.Http.Headers;
 using System.Reflection.Metadata;
 using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography;
@@ -122,6 +123,12 @@ Stream MyCreateOutputStream(string filename)
 
 void analyzeAndSaveData(DataTag? tag)
 {
+    // skip T88 header of DataTag
+    for (int i = 0; i < 12; i++)
+    {
+        int b = tag.getNextByte();
+        if (b < 0) goto eof;
+    }
     if (filename == null)
     {
         // seek header
@@ -161,12 +168,6 @@ void analyzeAndSaveData(DataTag? tag)
         int zeroCount = 0;
         int dataCount = 0;
         using var stream = MyCreateOutputStream(filename);
-        // skip T88 header of DataTag
-        for (int i = 0; i < 12; i++)
-        {
-            int b = tag.getNextByte();
-            if (b < 0) goto eof;
-        }
         for (; ; )
         {
             int b = tag.getNextByte();
@@ -193,15 +194,16 @@ void alalyzeMonitorStyle(DataTag? tag)
     if (listFlag) return;   // list only
     var sumAddr = (-h + l) & 0xff;
     var sum1 = tag.getNextByte();
-    if( sumAddr != sum1) 
+    if (sumAddr != sum1)
     {
         Console.Write("[ADDR CHECKSUM ERR], ");
         return;
     }
+    using var streamMem = new MemoryStream();
     for (; ; )
     {
         var mark = tag.getNextByte();
-        if( mark != 0x3a)
+        if (mark != 0x3a)
         {
             Console.Write("[NOT DATA HEAD(0x3a) ERR], ");
             return;
@@ -214,7 +216,7 @@ void alalyzeMonitorStyle(DataTag? tag)
         {
             var d = tag.getNextByte();
             sum += d;
-            // write d
+            streamMem.WriteByte((byte)d);
         }
         sum = (-sum) & 0xff;
         var blocksum = tag.getNextByte();
@@ -224,6 +226,8 @@ void alalyzeMonitorStyle(DataTag? tag)
             return;
         }
     }
+    using var stream = MyCreateOutputStream($"mon-{h:X2}{l:X2}");
+    stream.Write(streamMem.ToArray());
 }
 
 bool checkHeader()
