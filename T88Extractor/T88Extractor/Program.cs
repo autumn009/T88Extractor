@@ -186,6 +186,13 @@ void analyzeAndSaveData(DataTag? tag)
 eof:;
 }
 
+void writeJunkData(DataTag? tag)
+{
+    using var stream = MyCreateOutputStream($"BAD DATA");
+    stream.WriteByte(0x3a);
+    stream.Write(tag.Data);
+}
+
 void alalyzeMonitorStyle(DataTag? tag)
 {
     var h = tag.getNextByte();
@@ -206,6 +213,7 @@ void alalyzeMonitorStyle(DataTag? tag)
         if (mark != 0x3a)
         {
             Console.Write("[NOT DATA HEAD(0x3a) ERR], ");
+            writeJunkData(tag);
             return;
         }
         var datasize = tag.getNextByte();
@@ -223,6 +231,7 @@ void alalyzeMonitorStyle(DataTag? tag)
         if (sum != blocksum)
         {
             Console.Write("[BLOCK CHECKSUM ERR], ");
+            writeJunkData(tag);
             return;
         }
     }
