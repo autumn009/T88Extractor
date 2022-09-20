@@ -25,12 +25,12 @@ foreach (var target in args)
         }
     }
 }
-byte[] bytes = null;
+byte[] bytes;
 int p = 0;
 foreach (var item in listTargets)
 {
     Console.WriteLine($"{item}:");
-    workingDirectory = Path.Combine(Path.GetDirectoryName(item), Path.GetFileNameWithoutExtension(item));
+    workingDirectory = Path.Combine(Path.GetDirectoryName(item) ?? ".", Path.GetFileNameWithoutExtension(item));
     if(overrideFlag && Directory.Exists(workingDirectory))
     {
         foreach (var item2 in Directory.EnumerateFiles(workingDirectory))
@@ -97,8 +97,7 @@ Tag? getTag()
     else if (id == 0x103) tag = new MarkTag();
     else if (id == 0x101)
     {
-        var dtag = new DataTag();
-        dtag.Data = new byte[size];
+        var dtag = new DataTag(new byte[size]);
         for (int i = 0; i < size; i++)
         {
             dtag.Data[i] = (byte)getNextByte();
@@ -306,12 +305,10 @@ class MarkTag : Tag
 
 class DataTag : Tag
 {
-    public byte[]? Data;
-    public int P = 0;
-    public int getNextByte()
+    public byte[] Data;
+    public DataTag(byte[] data)
     {
-        if (P >= Data.Length) return -1;
-        return Data[P++];
+        Data = data;
     }
 }
 
