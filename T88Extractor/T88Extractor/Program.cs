@@ -1,10 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata;
-using System.Runtime.Serialization.Formatters;
-using System.Security.Cryptography;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Text;
 
 if ( args.Count() == 0)
 {
@@ -62,7 +56,6 @@ foreach (var item in listTargets)
     }
     stream.Flush();
     var dbytes = stream.ToArray();
-    //dump(dbytes);
     var dl = new dLoader(dbytes);
 
     for (; ; )
@@ -78,24 +71,6 @@ foreach (var item in listTargets)
     saveJunk(dl);
     Console.WriteLine();
 }
-
-#if false
-void dump(byte[] dbytes)
-{
-    int count = 0;
-    int dc = 0;
-    for (int i = 0; i < dbytes.Length; i++)
-    {
-        if (dbytes[i] == 0xd3) dc++; else dc = 0;
-        if( dc == 10)
-        {
-            count++;
-            dc = 0;
-        }
-    }
-    Console.WriteLine($"!!!{count}!!!");
-}
-#endif
 
 int getNextByte()
 {
@@ -154,59 +129,6 @@ Stream MyCreateOutputStream(string filename)
     return File.Create(fullpath);
 }
 
-
-void writeJunkData(DataTag? tag)
-{
-    using var stream = MyCreateOutputStream($"BAD DATA");
-    stream.WriteByte(0x3a);
-    stream.Write(tag.Data);
-}
-
-void alalyzeMonitorStyle(DataTag? tag)
-{
-    var h = tag.getNextByte();
-    var l = tag.getNextByte();
-    Console.Write($"&h{h:X2}{l:X2}, ");
-    if (listFlag) return;   // list only
-    var sumAddr = -(h + l) & 0xff;
-    var sum1 = tag.getNextByte();
-    if (sumAddr != sum1)
-    {
-        Console.Write("[ADDR CHECKSUM ERR], ");
-        return;
-    }
-    using var streamMem = new MemoryStream();
-    for (; ; )
-    {
-        var mark = tag.getNextByte();
-        if (mark != 0x3a)
-        {
-            Console.Write("[NOT DATA HEAD(0x3a) ERR], ");
-            writeJunkData(tag);
-            return;
-        }
-        var datasize = tag.getNextByte();
-        if (datasize == 0) break;
-        if (datasize < 0) break;
-        int sum = datasize;
-        for (int i = 0; i < datasize; i++)
-        {
-            var d = tag.getNextByte();
-            sum += d;
-            streamMem.WriteByte((byte)d);
-        }
-        sum = (-sum) & 0xff;
-        var blocksum = tag.getNextByte();
-        if (sum != blocksum)
-        {
-            Console.Write("[BLOCK CHECKSUM ERR], ");
-            writeJunkData(tag);
-            return;
-        }
-    }
-    using var stream = MyCreateOutputStream($"mon-{h:X2}{l:X2}");
-    stream.Write(streamMem.ToArray());
-}
 
 bool checkHeader()
 {
