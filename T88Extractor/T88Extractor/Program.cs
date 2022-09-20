@@ -220,8 +220,11 @@ bool checkHeader()
 
 void saveJunk(dLoader dl)
 {
-    using var stream = MyCreateOutputStream($"$JUNK DATA");
-    stream.Write(dl.Data);
+    if (!listFlag)
+    {
+        using var stream = MyCreateOutputStream($"$JUNK DATA");
+        stream.Write(dl.Data);
+    }
 }
 
 bool findMonitorAndRemove(dLoader dl)
@@ -245,7 +248,6 @@ tryagain:
     Console.Write($"&h{h:X2}{l:X2}, ");
 
     string errorMessage = "";
-    var streamMem = new MemoryStream();
     for (; ; )
     {
         var mark = dl.getNextByte();
@@ -262,7 +264,6 @@ tryagain:
         {
             var d = dl.getNextByte();
             sum += d;
-            streamMem.WriteByte((byte)d);
         }
         sum = (-sum) & 0xff;
         var blocksum = dl.getNextByte();
@@ -273,14 +274,11 @@ tryagain:
         }
     }
     dl.EndMark = dl.P;
-    dl.RemoveMarkedArea();
     if (!listFlag)
     {
-        using (var stream = MyCreateOutputStream($"mon-{h:X2}{l:X2}{errorMessage}"))
-        {
-            stream.Write(streamMem.ToArray());
-        }
+        dl.WriteMarkedArea(MyCreateOutputStream($"mon-{h:X2}{l:X2}{errorMessage}.cmt"));
     }
+    dl.RemoveMarkedArea();
     return true;
 eof:
     return false;
@@ -327,23 +325,21 @@ tryagain:
         if (b == 0) zeroCount++; else zeroCount = 0;
         dataCount++;
         stream.WriteByte((byte)b);
-        if (zeroCount == 9)
+        if (zeroCount == 12)
         {
             //Console.Write($"({dataCount}),");
             break;
         }
     }
     dl.EndMark = dl.P;
-    dl.RemoveMarkedArea();
-    //dump(dl.Data);
 
     if (!listFlag)
     {
-        using (var s = MyCreateOutputStream(filename))
-        {
-            s.Write(stream.ToArray());
-        }
+        // 注意! ここはPath.ChangeExtensionを使ってはならない。ファイル名を一部壊す恐れがある
+        dl.WriteMarkedArea(MyCreateOutputStream(filename+".cmt"));
     }
+    dl.RemoveMarkedArea();
+    //dump(dl.Data);
     return true;
 
 eof:;
@@ -408,6 +404,17 @@ class dLoader
     }
     public int StartMark = -1;
     public int EndMark = -1;
+    public void WriteMarkedArea(Stream stream)
+    {
+        if (StartMark < 0) throw new Exception("StartMark not set");
+        if (EndMark < 0) throw new Exception("EndMark not set");
+
+        using (stream)
+        {
+            stream.Write(Data,StartMark,EndMark-StartMark);
+        }
+    }
+
     public void RemoveMarkedArea()
     {
         if (StartMark < 0) throw new Exception("StartMark not set");
