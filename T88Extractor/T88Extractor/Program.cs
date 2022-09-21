@@ -246,7 +246,7 @@ tryagain:
         int b = dl.getNextByte();
         if (b < 0) goto eof;
         if (b == 0) continue;
-        if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?') b = 'x';
+        if (b < 0x20 || b >= 0x80 || b == ':' || b == '*' || b == '?' || b == '\\' || b == '/') b = 'x';
         sb.Append((char)b);
     }
     string filename = sb.ToString();
