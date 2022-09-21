@@ -10,6 +10,7 @@ var listTargets = new List<string>();
 bool listFlag = false;
 bool overrideFlag = false;
 string workingDirectory = "";
+List<string> listIndex = new List<string>();
 
 foreach (var target in args)
 {
@@ -69,6 +70,7 @@ foreach (var item in listTargets)
         if (!b) break;
     }
     saveJunk(dl);
+    saveIndex();
     Console.WriteLine();
 }
 
@@ -121,10 +123,12 @@ Stream MyCreateOutputStream(string filename)
     {
         for (int i = 1; ; i++)
         {
-            fullpath = Path.Combine(workingDirectory, filename)+$" ({i})";
+            string newFileName = Path.GetFileNameWithoutExtension(filename) + $" ({i})" + Path.GetExtension(filename);
+            fullpath = Path.Combine(workingDirectory, newFileName);
             if (!File.Exists(fullpath)) break;
         }
     }
+    listIndex.Add(Path.GetFileName(fullpath));
     return File.Create(fullpath);
 }
 
@@ -145,6 +149,18 @@ void saveJunk(dLoader dl)
     {
         using var stream = MyCreateOutputStream($"$JUNK DATA");
         stream.Write(dl.Data);
+    }
+}
+
+void saveIndex()
+{
+    if (!listFlag)
+    {
+        using var writer = File.CreateText(Path.Combine(workingDirectory,$"$Index.txt"));
+        foreach (var item in listIndex)
+        {
+            writer.WriteLine(item);
+        }
     }
 }
 
@@ -270,10 +286,11 @@ eof:;
 
 void usage()
 {
+    Console.WriteLine("T88Extgractor Version 1.1");
     Console.WriteLine("T88Extgractor Path... [-list] [-override]");
     Console.WriteLine("Path: wild card allowed");
     Console.WriteLine("-list: list only");
-    Console.WriteLine("-override: erase directory before run");
+    Console.WriteLine("-override: erase output directory before run");
 }
 
 abstract class Tag { }
