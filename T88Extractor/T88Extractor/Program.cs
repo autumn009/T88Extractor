@@ -30,6 +30,7 @@ byte[] bytes;
 int p = 0;
 foreach (var item in listTargets)
 {
+    listIndex.Clear();
     Console.WriteLine($"{item}:");
     workingDirectory = Path.Combine(Path.GetDirectoryName(item) ?? ".", Path.GetFileNameWithoutExtension(item));
     if(overrideFlag && Directory.Exists(workingDirectory))
