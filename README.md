@@ -25,3 +25,8 @@ CSAVEŒ`Ž®‚Æ‚µ‚Ä‚àƒ‚ƒjƒ^Œ`Ž®‚Æ‚µ‚Ä‚à”FŽ¯‚Å‚«‚È‚©‚Á‚½ƒf[ƒ^‚Í"$JUNK DATA"‚Æ‚¢‚¤ƒtƒ
 
 –{ƒc[ƒ‹‚ÍVisual Studio 2022 Version 17.4.0 Preview 2.0‚Å.NET 7‘Î‰ž‚Æ‚µ‚ÄŠJ”­‚³‚ê‚Ä‚¢‚Ü‚·‚ªA“Á•Ê‚È‹@”\‚Í‰½‚àŽg—p‚µ‚Ä‚¢‚È‚¢‚Ì‚ÅAVisual Studio 2022‚Æ.NET 6‚Å‚àƒrƒ‹ƒh‚Å‚«‚é‚ÆŽv‚¢‚Ü‚·BƒoƒCƒiƒŠ[‚Í“Á‚É’ñ‹Ÿ‚µ‚Ü‚¹‚ñ‚ªAƒ\[ƒX‚Í‚²Ž©—R‚É‚¨Žg‚¢‰º‚³‚¢B
 
+# N80MonCmt2Bin
+
+@ƒIƒ}ƒP‚Å‚·BN-BASIC‚Ìƒ‚ƒjƒ^‚ÌWƒRƒ}ƒ“ƒh‚Å‘‚«‘«‚µ‚½ƒtƒ@ƒCƒ‹(CMTŒ`Ž®)‚©‚çAƒwƒbƒ_[‚âƒ`ƒFƒbƒNƒTƒ€‚Ìî•ñ‚ðœ‚¢‚½ƒoƒCƒiƒŠ[’l‚¾‚¯‚ð”²‚«o‚µ‚Ü‚·BƒzƒXƒg‘¤‚Åƒ}ƒVƒ“Œê‚ð‹tƒAƒZƒ“ƒuƒ‹‚·‚éê‡‚È‚Ç‚ÉŽg‚¢‚Ü‚·Bƒ`ƒFƒbƒNƒTƒ€‚ÍŠm”F‚µ‚Ä‚¢‚È‚¢‚Ì‚ÅA³í‚É“Ç‚ÝŽæ‚ê‚½ƒtƒ@ƒCƒ‹‚Ì‚Ý‚ðŽg—p‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
+
+usage: N80MonCmtToBun SRC_FILE_NAME DST_FILE_NAME
