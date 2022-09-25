@@ -27,6 +27,8 @@ CSAVEŒ`Ž®‚Æ‚µ‚Ä‚àƒ‚ƒjƒ^Œ`Ž®‚Æ‚µ‚Ä‚à”FŽ¯‚Å‚«‚È‚©‚Á‚½ƒf[ƒ^‚Í"$JUNK DATA"‚Æ‚¢‚¤ƒtƒ
 
 # N80MonCmt2Bin
 
-@ƒIƒ}ƒP‚Å‚·BN-BASIC‚Ìƒ‚ƒjƒ^‚ÌWƒRƒ}ƒ“ƒh‚Å‘‚«‘«‚µ‚½ƒtƒ@ƒCƒ‹(CMTŒ`Ž®)‚©‚çAƒwƒbƒ_[‚âƒ`ƒFƒbƒNƒTƒ€‚Ìî•ñ‚ðœ‚¢‚½ƒoƒCƒiƒŠ[’l‚¾‚¯‚ð”²‚«o‚µ‚Ü‚·BƒzƒXƒg‘¤‚Åƒ}ƒVƒ“Œê‚ð‹tƒAƒZƒ“ƒuƒ‹‚·‚éê‡‚È‚Ç‚ÉŽg‚¢‚Ü‚·Bƒ`ƒFƒbƒNƒTƒ€‚ÍŠm”F‚µ‚Ä‚¢‚È‚¢‚Ì‚ÅA³í‚É“Ç‚ÝŽæ‚ê‚½ƒtƒ@ƒCƒ‹‚Ì‚Ý‚ðŽg—p‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
+@ƒIƒ}ƒP‚Å‚·BN-BASIC‚Ìƒ‚ƒjƒ^‚ÌWƒRƒ}ƒ“ƒh‚Å‘‚«o‚µ‚½ƒtƒ@ƒCƒ‹(CMTŒ`Ž®)‚©‚çAƒwƒbƒ_[‚âƒ`ƒFƒbƒNƒTƒ€‚Ìî•ñ‚ðœ‚¢‚½ƒoƒCƒiƒŠ[’l‚¾‚¯‚ð”²‚«o‚µ‚Ü‚·BƒzƒXƒg‘¤‚Åƒ}ƒVƒ“Œê‚ð‹tƒAƒZƒ“ƒuƒ‹‚·‚éê‡‚È‚Ç‚ÉŽg‚¢‚Ü‚·Bƒ`ƒFƒbƒNƒTƒ€‚ÍŠm”F‚µ‚Ä‚¢‚È‚¢‚Ì‚ÅA³í‚É“Ç‚ÝŽæ‚ê‚½ƒtƒ@ƒCƒ‹‚Ì‚Ý‚ðŽg—p‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
 
 usage: N80MonCmtToBun SRC_FILE_NAME DST_FILE_NAME
+
+Œä’ˆÓ: ŠJŽnƒAƒhƒŒƒXî•ñ‚ÍŽæ‚èœ‚©‚ê‚é‚Ì‚ÅAŽè“®‚Åƒƒ‚‚Á‚Ä‚¨‚¢‚Ä‰º‚³‚¢B•W€o—Í‚É•¶Žš—ñ‚Å•\Ž¦‚µ‚Ü‚·Bo—ÍƒoƒCƒiƒŠ[‚ÌƒIƒtƒZƒbƒg0‚ÍAƒZ[ƒu‚ÌŠJŽnƒAƒhƒŒƒX‚É‚È‚è‚Ü‚·B
