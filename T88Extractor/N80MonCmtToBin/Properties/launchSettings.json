@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "N80MonCmtToBin": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\delme\\pea\\mon-C000.cmt\" \"C:\\delme\\pea\\pea.bin\""
+    }
+  }
+}
